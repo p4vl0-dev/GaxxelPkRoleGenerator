@@ -2,8 +2,7 @@
   "GAXXGENERATOR": {
     "GeneratePokemon": "Создать Покемона",
     "SelectTheRank": "Выберите ранг",
-    "DragAnActorOrToken": "Перетащите сюда актёра или токен",
-    "ReleasedActorWillAppear": "Перетащенный актёр появится здесь",
+    "DragAnActorOrToken": "Перетащите сюда актёра",
     "ActorProcessingMenuTitle": "Генератор Покемонов",
     "GenerateAndCreateButton": "Сгенерировать актёра",
     "CloseButton": "Закрыть",
@@ -16,11 +15,11 @@
     "RankExpert": "Эксперт",
     "RankAce": "Ас",
 
-    "InvalidActorWarning": "То, что вы сбросили — не действительный актёр или токен.",
+    "InvalidActorWarning": "То, что вы сбросили — не действительный актёр.",
     "NoActorDraggedWarning": "Сначала перетащите актёра в это меню.",
     "InvalidRangeError": "Выбран неверный ранг Покемона.",
 
-    "WildPokemonName": "{rank} Дикий {name}",
+    "WildPokemonName": "{rank} {name}",
     "ActorImportedSuccess": "Актёр «{name}» успешно создан!",
     "RangeLabel": "Ранг",
     "PointsDistributionWarning": "Не удалось распределить все очки (достигнуты лимиты)."

@@ -2,8 +2,7 @@
   "GAXXGENERATOR": {
     "GeneratePokemon": "Generate Pokemon",
     "SelectTheRank": "Select the Rank",
-    "DragAnActorOrToken": "Drag an actor or token here",
-    "ReleasedActorWillAppear": "The dropped actor will appear here",
+    "DragAnActorOrToken": "Drag an actor here",
     "ActorProcessingMenuTitle": "Pokémon Generator",
     "GenerateAndCreateButton": "Generate Actor",
     "CloseButton": "Close",
@@ -16,7 +15,7 @@
     "RankExpert": "Expert",
     "RankAce": "Ace",
 
-    "InvalidActorWarning": "What you dropped is not a valid actor or token.",
+    "InvalidActorWarning": "What you dropped is not a valid actor.",
     "NoActorDraggedWarning": "Please drag an actor to the menu first.",
     "InvalidRangeError": "Invalid Pokémon range selected.",
 

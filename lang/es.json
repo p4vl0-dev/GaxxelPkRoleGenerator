@@ -3,7 +3,6 @@
     "GeneratePokemon": "Generar Pokémon",
     "SelectTheRank": "Seleccionar el rango",
     "DragAnActorOrToken": "Arrastra un actor o token aquí",
-    "ReleasedActorWillAppear": "El actor soltado aparecerá aquí",
     "ActorProcessingMenuTitle": "Generador de Pokémon",
     "GenerateAndCreateButton": "Generar y crear actor",
     "CloseButton": "Cerrar",
@@ -16,7 +15,7 @@
     "RankExpert": "Expert",
     "RankAce": "Ace",
 
-    "InvalidActorWarning": "Lo que has soltado no es un actor o token válido.",
+    "InvalidActorWarning": "Lo que has soltado no es un actor válido.",
     "NoActorDraggedWarning": "Por favor, arrastra primero un actor al menú.",
     "InvalidRangeError": "Rango de Pokémon seleccionado no válido.",
 
