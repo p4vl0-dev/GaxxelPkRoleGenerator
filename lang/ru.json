@@ -7,6 +7,7 @@
     "GenerateAndCreateButton": "Сгенерировать актёра",
     "CloseButton": "Закрыть",
     "ReadyToGenerateText": "Готов к генерации случайных характеристик.",
+    "ReleasedActorWillAppear": "Перетащенный актёр появится здесь",
 
     "RankStarter": "Начальный",
     "RankRookie": "Новичок",
@@ -15,6 +16,17 @@
     "RankExpert": "Эксперт",
     "RankAce": "Ас",
 
+    "SelectGenerationType": "Тип генерации",
+    "GenerationTypeWild": "Дикий",
+    "GenerationTypeBattle": "Боевой",
+    "GenerationTypeAverage": "Сбалансированный",
+    "GenerationTypeLabel": "Тип генерации",
+
+    "SelectCombatBias": "Боевой уклон",
+    "CombatBiasTank": "Танк",
+    "CombatBiasPhysical": "Физический",
+    "CombatBiasSpecial": "Специальный",
+
     "InvalidActorWarning": "То, что вы сбросили — не действительный актёр.",
     "NoActorDraggedWarning": "Сначала перетащите актёра в это меню.",
     "InvalidRangeError": "Выбран неверный ранг Покемона.",
@@ -22,6 +34,13 @@
     "WildPokemonName": "{rank} {name}",
     "ActorImportedSuccess": "Актёр «{name}» успешно создан!",
     "RangeLabel": "Ранг",
-    "PointsDistributionWarning": "Не удалось распределить все очки (достигнуты лимиты)."
+    "PointsDistributionWarning": "Не удалось распределить все очки (достигнуты лимиты).",
+
+    "Settings": {
+      "RandomizeGenderName": "Случайный пол",
+      "RandomizeGenderHint": "Если включено, при генерации пол покемона выбирается случайно. Иначе сохраняется исходный пол актёра.",
+      "RandomizeNatureName": "Случайная природа",
+      "RandomizeNatureHint": "Если включено, природа покемона выбирается случайно. Иначе сохраняется исходная природа актёра."
+    }
   }
 }

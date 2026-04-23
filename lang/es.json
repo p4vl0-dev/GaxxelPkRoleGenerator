@@ -7,6 +7,7 @@
     "GenerateAndCreateButton": "Generar y crear actor",
     "CloseButton": "Cerrar",
     "ReadyToGenerateText": "Listo para generar estadísticas aleatorias.",
+    "ReleasedActorWillAppear": "El actor soltado aparecerá aquí",
 
     "RankStarter": "Starter",
     "RankRookie": "Rookie",
@@ -15,6 +16,17 @@
     "RankExpert": "Expert",
     "RankAce": "Ace",
 
+    "SelectGenerationType": "Tipo de generación",
+    "GenerationTypeWild": "Salvaje",
+    "GenerationTypeBattle": "Batalla",
+    "GenerationTypeAverage": "Equilibrado",
+    "GenerationTypeLabel": "Tipo de generación",
+
+    "SelectCombatBias": "Sesgo de combate",
+    "CombatBiasTank": "Tanque",
+    "CombatBiasPhysical": "Físico",
+    "CombatBiasSpecial": "Especial",
+
     "InvalidActorWarning": "Lo que has soltado no es un actor válido.",
     "NoActorDraggedWarning": "Por favor, arrastra primero un actor al menú.",
     "InvalidRangeError": "Rango de Pokémon seleccionado no válido.",
@@ -22,6 +34,13 @@
     "WildPokemonName": "{rank} salvaje {name}",
     "ActorImportedSuccess": "¡{name} creado e importado con éxito!",
     "RangeLabel": "Rango",
-    "PointsDistributionWarning": "No se pudieron distribuir todos los puntos (se alcanzaron los límites)."
+    "PointsDistributionWarning": "No se pudieron distribuir todos los puntos (se alcanzaron los límites).",
+
+    "Settings": {
+      "RandomizeGenderName": "Género aleatorio",
+      "RandomizeGenderHint": "Si está activado, el género del Pokémon se elige al azar. De lo contrario, se conserva el género original del actor.",
+      "RandomizeNatureName": "Naturaleza aleatoria",
+      "RandomizeNatureHint": "Si está activado, la naturaleza del Pokémon se elige al azar. De lo contrario, se conserva la naturaleza original del actor."
+    }
   }
 }

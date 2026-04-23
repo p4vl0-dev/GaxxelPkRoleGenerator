@@ -1,5 +1,28 @@
+import { assignWildStats, assignBattleStats, assignAverageStats } from './scripts/generatorLogic.js';
+
 Hooks.once("init", () => {
     console.log("Iniciando modulo de prueba");
+
+    // Регистрация настроек модуля
+    game.settings.register("GaxxelPkRoleGenerator", "randomizeGender", {
+        name: "GAXXGENERATOR.Settings.RandomizeGenderName",
+        hint: "GAXXGENERATOR.Settings.RandomizeGenderHint",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: true,
+        requiresReload: false
+    });
+
+    game.settings.register("GaxxelPkRoleGenerator", "randomizeNature", {
+        name: "GAXXGENERATOR.Settings.RandomizeNatureName",
+        hint: "GAXXGENERATOR.Settings.RandomizeNatureHint",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: true,
+        requiresReload: false
+    });
 });
 
 const RANGES_DATA = {
@@ -11,7 +34,19 @@ const RANGES_DATA = {
     ace: { attr: 10, social: 10, skill: 20, skillMax: 5, nameKey: "GAXXGENERATOR.RankAce" }
 };
 
-const GENDERS = ["male", "female", "genderless"];
+const GENERATION_TYPES = {
+    wild: { nameKey: "GAXXGENERATOR.GenerationTypeWild" },
+    battle: { nameKey: "GAXXGENERATOR.GenerationTypeBattle" },
+    average: { nameKey: "GAXXGENERATOR.GenerationTypeAverage" }
+};
+
+const COMBAT_BIAS_TYPES = {
+    tank: { nameKey: "GAXXGENERATOR.CombatBiasTank" },
+    physical: { nameKey: "GAXXGENERATOR.CombatBiasPhysical" },
+    special: { nameKey: "GAXXGENERATOR.CombatBiasSpecial" }
+};
+
+const GENDERS = ["male", "female"];
 const NATURES = ["hardy", "lonely", "brave", "adamant", "naughty",
                  "bold", "docile", "relaxed", "impish", "lax",
                  "timid", "hasty", "serious", "jolly", "naive",
@@ -34,40 +69,13 @@ Hooks.on("renderActorDirectory", (app, element, data) => {
         `;
 
         jHeaderActions.append(newButtonHtml);
-
         jHeaderActions.off('click', '.my-custom-actor-button');
-
         jHeaderActions.on('click', '.my-custom-actor-button', (event) => {
             event.preventDefault();
             new PokemonGeneratorApp().render({ force: true });
         });
     }
 });
-
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function distributePoints(attributesObject, pointsToDistribute, maxRankLimit) {
-    const keys = Object.keys(attributesObject);
-    let remainingPoints = pointsToDistribute;
-
-    while (remainingPoints > 0) {
-        const randomKey = keys[getRandomInt(0, keys.length - 1)];
-        const currentVal = attributesObject[randomKey].value;
-        const pokemonMax = attributesObject[randomKey].max || 999; 
-
-        if (currentVal < maxRankLimit && currentVal < pokemonMax) {
-            attributesObject[randomKey].value += 1;
-            remainingPoints -= 1;
-        } else if (keys.every(k => attributesObject[k].value >= maxRankLimit || attributesObject[k].value >= attributesObject[k].max)) {
-            console.warn(game.i18n.localize("GAXXGENERATOR.PointsDistributionWarning"));
-            break;
-        }
-    }
-}
 
 class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplicationMixin(
     foundry.applications.api.ApplicationV2
@@ -77,6 +85,8 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
         this.#droppedActor = null;
         this.#dragDropHandler = null;
         this.#selectedRange = "starter";
+        this.#selectedGenType = "wild";
+        this.#selectedCombatBias = "tank";
         this._onGenerateBound = this._onGenerate.bind(this);
     }
 
@@ -107,6 +117,8 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
     #droppedActor;
     #dragDropHandler;
     #selectedRange;
+    #selectedGenType;
+    #selectedCombatBias;
     _onGenerateBound;
 
     _prepareContext() {
@@ -115,9 +127,22 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
             nameKey: data.nameKey,
             selected: key === this.#selectedRange
         }));
+        const generationTypes = Object.entries(GENERATION_TYPES).map(([key, data]) => ({
+            key,
+            nameKey: data.nameKey,
+            selected: key === this.#selectedGenType
+        }));
+        const combatBiasTypes = Object.entries(COMBAT_BIAS_TYPES).map(([key, data]) => ({
+            key,
+            nameKey: data.nameKey,
+            selected: key === this.#selectedCombatBias
+        }));
         return {
             ranges,
+            generationTypes,
+            combatBiasTypes,
             droppedActor: this.#droppedActor,
+            showCombatBias: this.#selectedGenType === 'battle',
             i18n: (key) => game.i18n.localize(key)
         };
     }
@@ -164,6 +189,31 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
             });
             selectEl.value = this.#selectedRange;
         }
+
+        const genTypeEl = html.querySelector('[name="generationType"]');
+        const combatBiasContainer = html.querySelector('.combat-bias-container');
+        if (genTypeEl) {
+            genTypeEl.addEventListener('change', (event) => {
+                this.#selectedGenType = event.target.value;
+                // Показываем/скрываем контейнер боевого уклона
+                if (combatBiasContainer) {
+                    combatBiasContainer.style.display = this.#selectedGenType === 'battle' ? 'block' : 'none';
+                }
+            });
+            genTypeEl.value = this.#selectedGenType;
+            // Инициализация видимости
+            if (combatBiasContainer) {
+                combatBiasContainer.style.display = this.#selectedGenType === 'battle' ? 'block' : 'none';
+            }
+        }
+
+        const combatBiasEl = html.querySelector('[name="combatBias"]');
+        if (combatBiasEl) {
+            combatBiasEl.addEventListener('change', (event) => {
+                this.#selectedCombatBias = event.target.value;
+            });
+            combatBiasEl.value = this.#selectedCombatBias;
+        }
     }
 
     async _onDrop(event) {
@@ -203,15 +253,17 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
         }
 
         const selectedRangeKey = this.#selectedRange;
+        const selectedGenType = this.#selectedGenType;
+        const selectedCombatBias = this.#selectedCombatBias;
 
         const rangeData = RANGES_DATA[selectedRangeKey];
         if (!rangeData) {
             ui.notifications.error(game.i18n.localize("GAXXGENERATOR.InvalidRangeError"));
             return;
         }
-        
-        const randomGender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
-        const randomNature = NATURES[Math.floor(Math.random() * NATURES.length)];
+
+        const randomizeGender = game.settings.get("GaxxelPkRoleGenerator", "randomizeGender");
+        const randomizeNature = game.settings.get("GaxxelPkRoleGenerator", "randomizeNature");
 
         let actorDataToImport = this.#droppedActor.toObject();
         actorDataToImport.name = game.i18n.format("GAXXGENERATOR.WildPokemonName", {
@@ -220,18 +272,39 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
         });
 
         if (actorDataToImport.system) {
-            actorDataToImport.system.gender = randomGender;
-            actorDataToImport.system.personality = randomNature;
+            if (randomizeGender) {
+                actorDataToImport.system.gender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
+            } else {
+                actorDataToImport.system.gender = this.#droppedActor.system.gender || "genderless";
+            }
+
+            if (randomizeNature) {
+                actorDataToImport.system.personality = NATURES[Math.floor(Math.random() * NATURES.length)];
+            } else {
+                actorDataToImport.system.personality = this.#droppedActor.system.personality || "hardy";
+            }
+
             actorDataToImport.system.rank = selectedRangeKey;
+            
+            // Обновление максимальных значений навыков
             if (actorDataToImport.system.skills) {
                 Object.keys(actorDataToImport.system.skills).forEach(skillKey => {
                     actorDataToImport.system.skills[skillKey].max = rangeData.skillMax;
                 });
             }
 
-            distributePoints(actorDataToImport.system.attributes, rangeData.attr, 999);
-            distributePoints(actorDataToImport.system.social, rangeData.social, 5);
-            distributePoints(actorDataToImport.system.skills, rangeData.skill, rangeData.skillMax);
+            const attrPoints = rangeData.attr;
+            const socPoints = rangeData.social;
+            const skillPoints = rangeData.skill;
+            const skillMax = rangeData.skillMax;
+
+            if (selectedGenType === 'wild') {
+                assignWildStats(actorDataToImport.system.attributes, actorDataToImport.system.social, actorDataToImport.system.skills, attrPoints, socPoints, skillPoints, skillMax);
+            } else if (selectedGenType === 'battle') {
+                assignBattleStats(actorDataToImport.system.attributes, actorDataToImport.system.social, actorDataToImport.system.skills, attrPoints, socPoints, skillPoints, skillMax, selectedCombatBias);
+            } else if (selectedGenType === 'average') {
+                assignAverageStats(actorDataToImport.system.attributes, actorDataToImport.system.social, actorDataToImport.system.skills, attrPoints, socPoints, skillPoints, skillMax);
+            }
         }
 
         const importedActor = await Actor.create(actorDataToImport);
@@ -241,7 +314,8 @@ class PokemonGeneratorApp extends foundry.applications.api.HandlebarsApplication
             container.innerHTML = `
                 <div style="padding: 10px; border: 1px solid #4CAF50; margin-top: 10px; background-color: #1e1e1e; color: #ddd;">
                     <strong>${game.i18n.format("GAXXGENERATOR.ActorImportedSuccess", { name: importedActor.name })}</strong><br>
-                    ${game.i18n.localize("GAXXGENERATOR.RangeLabel")}: ${game.i18n.localize(rangeData.nameKey)}
+                    ${game.i18n.localize("GAXXGENERATOR.RangeLabel")}: ${game.i18n.localize(rangeData.nameKey)}<br>
+                    ${game.i18n.localize("GAXXGENERATOR.GenerationTypeLabel")}: ${game.i18n.localize(GENERATION_TYPES[selectedGenType].nameKey)}${selectedGenType === 'battle' ? ` (${game.i18n.localize(COMBAT_BIAS_TYPES[selectedCombatBias].nameKey)})` : ''}
                 </div>
             `;
         }
