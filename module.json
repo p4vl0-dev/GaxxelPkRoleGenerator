@@ -1,8 +1,8 @@
 {
   "id": "GaxxelPkRoleGenerator",
-  "title": "GaxxelPkRoleGenerator",
+  "title": "GaxxelPkRoleGenerator Fork",
   "description": "A quick improvisation tool to generate Pokémon or Trainer NPCs with attributes, skills, gender, and natures.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -45,10 +45,8 @@
       "flags": {}
     }
   ],
-  "url": "https://github.com/gaxxel-tech/GaxxelPkRoleGenerator",
-  "manifest": "https://raw.githubusercontent.com/gaxxel-tech/GaxxelPkRoleGenerator/main/module.json",
-  "download": "https://github.com/gaxxel-tech/GaxxelPkRoleGenerator/releases/download/Pokemon/GaxxelPkRoleGenerator.zip",
-  "bugs": "https://github.com/gaxxel-tech/GaxxelPkRoleGenerator/issues",
-  "readme": "https://github.com/gaxxel-tech/GaxxelPkRoleGenerator#readme",
+  "url": "https://github.com/p4vl0-dev/GaxxelPkRoleGenerator",
+  "manifest": "https://github.com/p4vl0-dev/GaxxelPkRoleGenerator/releases/latest/download/main.mjs",
+  "download": "https://github.com/p4vl0-dev/GaxxelPkRoleGenerator/releases/latest/download/GaxxelPkRoleGenerator.zip",
   "flags": {}
 }
