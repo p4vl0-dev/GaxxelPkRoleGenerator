@@ -2,10 +2,10 @@
   "id": "GaxxelPkRoleGenerator",
   "title": "GaxxelPkRoleGenerator Fork",
   "description": "A quick improvisation tool to generate Pokémon or Trainer NPCs with attributes, skills, gender, and natures.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "compatibility": {
     "minimum": "13",
-    "verified": "13"
+    "verified": "14"
   },
   "esmodules": [
     "main.mjs",
