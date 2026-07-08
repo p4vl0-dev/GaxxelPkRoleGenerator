@@ -11,6 +11,11 @@ function getRandomArrayItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Вспомогательная функция для безопасного получения максимума
+function getMax(attrObj, defaultMax = 999) {
+    return attrObj?.max ?? defaultMax;
+}
+
 /**
  * Генерация типа "Wild" (Дикий) — полностью случайное распределение очков.
  */
@@ -19,11 +24,15 @@ export function assignWildStats(attributes, social, skills, attrPoints, socPoint
     let remaining = attrPoints;
     while (remaining > 0) {
         const key = getRandomArrayItem(COMBAT_ATTRIBUTES);
-        if (attributes[key] && attributes[key].value < 999) {
-            attributes[key].value++;
+        const attr = attributes[key];
+        if (attr && attr.value < getMax(attr)) {
+            attr.value++;
             remaining--;
-        } else if (COMBAT_ATTRIBUTES.every(k => !attributes[k] || attributes[k].value >= 999)) {
-            break;
+        } else {
+            // Если все атрибуты достигли максимума – выходим
+            if (COMBAT_ATTRIBUTES.every(k => !attributes[k] || attributes[k].value >= getMax(attributes[k]))) {
+                break;
+            }
         }
     }
 
@@ -31,11 +40,14 @@ export function assignWildStats(attributes, social, skills, attrPoints, socPoint
     remaining = socPoints;
     while (remaining > 0) {
         const key = getRandomArrayItem(SOCIAL_ATTRIBUTES);
-        if (social[key] && social[key].value < 5) {
-            social[key].value++;
+        const soc = social[key];
+        if (soc && soc.value < getMax(soc, 5)) {
+            soc.value++;
             remaining--;
-        } else if (SOCIAL_ATTRIBUTES.every(k => !social[k] || social[k].value >= 5)) {
-            break;
+        } else {
+            if (SOCIAL_ATTRIBUTES.every(k => !social[k] || social[k].value >= getMax(social[k], 5))) {
+                break;
+            }
         }
     }
 
@@ -63,59 +75,72 @@ export function assignBattleStats(attributes, social, skills, attrPoints, socPoi
     let excludedAttrs = [];
     if (combatBias === 'tank') {
         priorityAttrs = ['vitality', 'insight'];
-        excludedAttrs = []; // танк качает всё, но с приоритетом на защитные
+        excludedAttrs = [];
     } else if (combatBias === 'physical') {
         priorityAttrs = ['strength'];
-        excludedAttrs = ['special']; // физический атакер не качает специальную атаку
+        excludedAttrs = ['special'];
     } else if (combatBias === 'special') {
         priorityAttrs = ['special'];
-        excludedAttrs = ['strength']; // специальный атакер не качает силу
+        excludedAttrs = ['strength'];
     } else {
         priorityAttrs = COMBAT_ATTRIBUTES;
         excludedAttrs = [];
     }
 
-    // Создаём список атрибутов, доступных для распределения (исключая запрещённые)
+    // Доступные атрибуты (не исключённые)
     let availableAttrs = COMBAT_ATTRIBUTES.filter(attr => !excludedAttrs.includes(attr));
     if (availableAttrs.length === 0) availableAttrs = COMBAT_ATTRIBUTES;
 
-    // Выделяем значительную часть очков приоритетным атрибутам (70%)
+    // Приоритетные атрибуты, которые есть в attributes и не исключены
+    let priorityAvailable = priorityAttrs.filter(attr => !excludedAttrs.includes(attr) && attributes[attr]);
+    if (priorityAvailable.length === 0) priorityAvailable = availableAttrs;
+
+    // Распределяем 70% очков на приоритетные
     let priorityPoints = Math.floor(attrPoints * 0.7);
     let remaining = attrPoints;
 
-    // Распределяем приоритетные очки
     let tempRemaining = priorityPoints;
     while (tempRemaining > 0) {
-        const key = getRandomArrayItem(priorityAttrs.filter(attr => !excludedAttrs.includes(attr)));
-        if (attributes[key] && attributes[key].value < 999) {
-            attributes[key].value++;
+        const key = getRandomArrayItem(priorityAvailable);
+        const attr = attributes[key];
+        if (attr && attr.value < getMax(attr)) {
+            attr.value++;
             tempRemaining--;
             remaining--;
-        } else if (priorityAttrs.every(k => !attributes[k] || attributes[k].value >= 999 || excludedAttrs.includes(k))) {
-            break;
+        } else {
+            // Если этот атрибут достиг максимума, убираем его из списка
+            priorityAvailable = priorityAvailable.filter(k => k !== key);
+            if (priorityAvailable.length === 0) break;
         }
     }
 
-    // Оставшиеся очки распределяем случайно по доступным атрибутам
+    // Оставшиеся очки распределяем по всем доступным атрибутам
+    let availableForRemaining = availableAttrs.filter(attr => attributes[attr]);
     while (remaining > 0) {
-        const key = getRandomArrayItem(availableAttrs);
-        if (attributes[key] && attributes[key].value < 999) {
-            attributes[key].value++;
+        const key = getRandomArrayItem(availableForRemaining);
+        const attr = attributes[key];
+        if (attr && attr.value < getMax(attr)) {
+            attr.value++;
             remaining--;
-        } else if (availableAttrs.every(k => !attributes[k] || attributes[k].value >= 999)) {
-            break;
+        } else {
+            availableForRemaining = availableForRemaining.filter(k => k !== key);
+            if (availableForRemaining.length === 0) break;
         }
     }
 
-    // Социальные атрибуты — случайно (без изменений)
+    // Социальные атрибуты — случайно (с учётом максимума)
     remaining = socPoints;
+    // Создаём копию SOCIAL_ATTRIBUTES для удаления достигших максимума
+    let socialAvailable = [...SOCIAL_ATTRIBUTES];
     while (remaining > 0) {
-        const key = getRandomArrayItem(SOCIAL_ATTRIBUTES);
-        if (social[key] && social[key].value < 5) {
-            social[key].value++;
+        const key = getRandomArrayItem(socialAvailable);
+        const soc = social[key];
+        if (soc && soc.value < getMax(soc, 5)) {
+            soc.value++;
             remaining--;
-        } else if (SOCIAL_ATTRIBUTES.every(k => !social[k] || social[k].value >= 5)) {
-            break;
+        } else {
+            socialAvailable = socialAvailable.filter(k => k !== key);
+            if (socialAvailable.length === 0) break;
         }
     }
 
@@ -127,40 +152,46 @@ export function assignBattleStats(attributes, social, skills, attrPoints, socPoi
         excludedSkills = [];
     } else if (combatBias === 'physical') {
         prioritySkills.push('brawl');
-        excludedSkills = ['channel']; // физик не качает специальный навык
+        excludedSkills = ['channel'];
     } else if (combatBias === 'special') {
         prioritySkills.push('channel');
-        excludedSkills = ['brawl']; // специалист не качает физический навык
+        excludedSkills = ['brawl'];
     }
 
-    // Создаём список навыков, доступных для распределения
     const allSkillKeys = Object.keys(skills);
     let availableSkills = allSkillKeys.filter(skill => !excludedSkills.includes(skill));
     if (availableSkills.length === 0) availableSkills = allSkillKeys;
 
-    // Выделяем большую часть очков навыков (70%) на приоритетные навыки
+    let prioritySkillAvailable = prioritySkills.filter(skill => !excludedSkills.includes(skill) && skills[skill]);
+    if (prioritySkillAvailable.length === 0) prioritySkillAvailable = availableSkills;
+
     const skillPriorityPoints = Math.floor(skillPoints * 0.7);
     let skillRemaining = skillPoints;
     let tempSkillRemaining = skillPriorityPoints;
+
     while (tempSkillRemaining > 0) {
-        const key = getRandomArrayItem(prioritySkills.filter(skill => !excludedSkills.includes(skill) && skills[skill]));
-        if (skills[key] && skills[key].value < skillMax) {
-            skills[key].value++;
+        const key = getRandomArrayItem(prioritySkillAvailable);
+        const sk = skills[key];
+        if (sk && sk.value < skillMax) {
+            sk.value++;
             tempSkillRemaining--;
             skillRemaining--;
-        } else if (prioritySkills.every(k => !skills[k] || skills[k].value >= skillMax || excludedSkills.includes(k))) {
-            break;
+        } else {
+            prioritySkillAvailable = prioritySkillAvailable.filter(k => k !== key);
+            if (prioritySkillAvailable.length === 0) break;
         }
     }
 
-    // Оставшиеся очки навыков распределяем случайно по доступным навыкам
+    let skillAvailableForRemaining = availableSkills.filter(skill => skills[skill]);
     while (skillRemaining > 0) {
-        const key = getRandomArrayItem(availableSkills);
-        if (skills[key] && skills[key].value < skillMax) {
-            skills[key].value++;
+        const key = getRandomArrayItem(skillAvailableForRemaining);
+        const sk = skills[key];
+        if (sk && sk.value < skillMax) {
+            sk.value++;
             skillRemaining--;
-        } else if (availableSkills.every(k => !skills[k] || skills[k].value >= skillMax)) {
-            break;
+        } else {
+            skillAvailableForRemaining = skillAvailableForRemaining.filter(k => k !== key);
+            if (skillAvailableForRemaining.length === 0) break;
         }
     }
 }
@@ -174,12 +205,13 @@ export function assignAverageStats(attributes, social, skills, attrPoints, socPo
     let index = 0;
     while (remaining > 0) {
         const key = COMBAT_ATTRIBUTES[index % COMBAT_ATTRIBUTES.length];
-        if (attributes[key] && attributes[key].value < 999) {
-            attributes[key].value++;
+        const attr = attributes[key];
+        if (attr && attr.value < getMax(attr)) {
+            attr.value++;
             remaining--;
         }
         index++;
-        if (index > 1000) break;
+        if (index > 1000) break; // защита от бесконечного цикла
     }
 
     // Социальные атрибуты равномерно
@@ -187,8 +219,9 @@ export function assignAverageStats(attributes, social, skills, attrPoints, socPo
     index = 0;
     while (remaining > 0) {
         const key = SOCIAL_ATTRIBUTES[index % SOCIAL_ATTRIBUTES.length];
-        if (social[key] && social[key].value < 5) {
-            social[key].value++;
+        const soc = social[key];
+        if (soc && soc.value < getMax(soc, 5)) {
+            soc.value++;
             remaining--;
         }
         index++;
